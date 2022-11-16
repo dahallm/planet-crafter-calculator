@@ -1,42 +1,67 @@
-import {environmentalFactorConversions, TConversionFactorKeys} from '../model/environment-units';
-import {FormControl, Input, MenuItem, Select} from '@mui/material';
+import {TEnvironmentalFactorMeasurements, TPossibleFactors} from '../model/environment-units';
+import {FormControl, Input} from '@mui/material';
 import classnames, {width} from 'tailwindcss-classnames';
 import React from 'react';
+import {UnitSelect} from './UnitSelect';
+import {setEnvironmentMeasurement} from './unit-select-slice';
+import {useDispatch} from 'react-redux';
 
 export interface EnvironmentalMeasurementInputProps {
-    type: TConversionFactorKeys;
+    type: TEnvironmentalFactorMeasurements;
 }
 
 export function EnvironmentalMeasurementInput(props: EnvironmentalMeasurementInputProps) {
-    const factors = environmentalFactorConversions[props.type];
-    const [value, setValue] = React.useState(1);
+    const dispatch = useDispatch();
+    const [value, setValue] = React.useState('0');
+    const [factor, setFactor] = React.useState(1 as TPossibleFactors);
 
-
-    function test(event: React.ChangeEvent<HTMLInputElement>) {
-        setValue(parseFloat(event.target.value));
+    function updateStore(event: React.FocusEvent<HTMLInputElement>) {
+        let rawValue = event.target.value;
+        if (!rawValue || rawValue === ',' || rawValue === '.') {
+            rawValue = '0';
+        }
+        update(rawValue, factor);
     }
 
-    function handleChange() {
+    function update(inputNumber: string, factor: TPossibleFactors) {
+        const containsComma = inputNumber.includes(',');
+        const float = parseFloat(inputNumber.replace(',', '.'));
+        const newValue = float * factor;
+        const floatString = float.toString();
 
+        setValue(containsComma ? floatString.replace('.', ',') : floatString);
+        dispatch(setEnvironmentMeasurement({environmentalFactorMeasurement: props.type, value: newValue}));
+    }
+
+    function allowDigitsAndAtMostOneDecimalSeparator(event: React.ChangeEvent<HTMLInputElement>) {
+        let rawValue = event.target.value;
+        if (rawValue.match(/^\d*[.,]?\d*$/)) {
+            setValue(rawValue);
+        }
+    }
+
+    function clearIfZero() {
+        if (value === '0') {
+            setValue('');
+        }
+    }
+
+    function updateFactor(factor: TPossibleFactors) {
+        setFactor(factor);
+        update(value, factor);
     }
 
     return <FormControl variant="standard">
         <Input
+            data-testid="input"
             className={classnames(
                 width('w-48'),
             )}
-            onChange={test}
+            onFocus={clearIfZero}
+            onChange={allowDigitsAndAtMostOneDecimalSeparator}
+            onBlur={updateStore}
             value={value}
-            endAdornment={<FormControl variant='standard'><Select
-
-                labelId="my-label"
-                value={1}
-                onChange={handleChange}
-            >
-                {Object.entries(factors).map(([name, factor]) =>
-                    <MenuItem key={name} value={factor}>{name}</MenuItem>,
-                )}
-            </Select></FormControl>}
+            endAdornment={<UnitSelect onChange={updateFactor} type={props.type}/>}
         />
     </FormControl>
 }
