@@ -1,5 +1,5 @@
 import {TEnvironmentalFactorMeasurements, TPossibleFactors} from '../model/environment-units';
-import {FormControl, Input} from '@mui/material';
+import {FormControl, Input, InputLabel} from '@mui/material';
 import classnames, {width} from 'tailwindcss-classnames';
 import React from 'react';
 import {UnitSelect} from './UnitSelect';
@@ -51,17 +51,20 @@ export function EnvironmentalMeasurementInput(props: EnvironmentalMeasurementInp
         update(value, factor);
     }
 
-    return <FormControl variant="standard">
-        <Input
-            data-testid="input"
-            className={classnames(
-                width('w-48'),
-            )}
-            onFocus={clearIfZero}
-            onChange={allowDigitsAndAtMostOneDecimalSeparator}
-            onBlur={updateStore}
-            value={value}
-            endAdornment={<UnitSelect onChange={updateFactor} type={props.type}/>}
-        />
-    </FormControl>
+    return <div>
+        <InputLabel>{props.type}</InputLabel>
+        <FormControl variant="standard">
+            <Input
+                className={classnames(
+                    width('w-48'),
+                )}
+                aria-label={'test'}
+                onFocus={clearIfZero}
+                onChange={allowDigitsAndAtMostOneDecimalSeparator}
+                onBlur={updateStore}
+                value={value}
+            />
+        </FormControl>
+        <UnitSelect onChange={updateFactor} type={props.type}/>
+    </div>
 }
