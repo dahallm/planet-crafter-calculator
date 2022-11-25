@@ -2,9 +2,12 @@ import {backgroundColor, classnames, display, grid, height, padding, typography}
 import {EnvironmentalMeasurementInput} from './components/environmental-measurement-input';
 import React from 'react';
 import {useSelector} from 'react-redux';
+import {Input} from '@mui/material';
 
 export function EnvironmentalMeasurements() {
     const storeValue = useSelector(state => state);
+    const progress = useSelector(state => (state as any).progress);
+    const calculatedTi = (Object.values(progress) as number[]).reduce((sum: number, current: number) => sum + current, 0);
 
     return <div className={classnames(
         backgroundColor('bg-stone-800'),
@@ -38,6 +41,7 @@ export function EnvironmentalMeasurements() {
             <EnvironmentalMeasurementInput type={'heat'}/>
             <EnvironmentalMeasurementInput type={'pressure'}/>
             <EnvironmentalMeasurementInput type={'biomass'}/>
+            <Input value={calculatedTi}/>
         </div>
     </div>;
 }
